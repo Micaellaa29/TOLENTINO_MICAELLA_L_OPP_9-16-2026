@@ -1,0 +1,96 @@
+using System;
+using System.Collections.Generic;
+
+namespace StarShape
+{
+    class Program
+    {
+        const int GridWidth = 61;   // Center Column
+        const int GridHeight = 31;  // Center Row
+
+        static void Main(string[] args)
+        {
+            char[,] grid = new char[GridHeight, GridWidth];
+
+            for (int r = 0; r < GridHeight; r++)
+                for (int c = 0; c < GridWidth; c++)
+                    grid[r, c] = ' ';
+
+            double centerX = (GridWidth - 1) / 2.0;
+            double centerY = (GridHeight - 1) / 2.0;
+
+            double outerRadius = GridHeight / 2.0 - 1;
+            double innerRadius = outerRadius * 0.4;
+
+            List<(double X, double Y)> starVertices =
+                GetStarVertices(centerX, centerY, outerRadius, innerRadius, 5);
+
+            for (int i = 0; i < starVertices.Count; i++)
+            {
+                var start = starVertices[i];
+                var end = starVertices[(i + 1) % starVertices.Count];
+
+                DrawLine(grid, start, end);
+            }
+
+            PrintGrid(grid);
+        }
+
+        static List<(double X, double Y)> GetStarVertices(
+            double centerX, double centerY,
+            double outerRadius, double innerRadius, int points)
+        {
+            var vertices = new List<(double X, double Y)>();
+
+            int totalPoints = points * 2;
+            double angleStep = Math.PI / points;
+            double starAngle = -Math.PI / 2; // Point star upward
+
+            for (int i = 0; i < totalPoints; i++)
+            {
+                double radius = (i % 2 == 0) ? outerRadius : innerRadius;
+                double angle = starAngle + angleStep * i;
+
+                double x = centerX + Math.Cos(angle) * radius * 1.8;
+                double y = centerY + Math.Sin(angle) * radius;
+
+                vertices.Add((x, y));
+            }
+
+            return vertices;
+        }
+
+        static void DrawLine(char[,] grid,
+            (double X, double Y) start,
+            (double X, double Y) end)
+        {
+            int steps = (int)Math.Max(
+                Math.Abs(end.X - start.X),
+                Math.Abs(end.Y - start.Y)) + 1;
+
+            for (int i = 0; i <= steps; i++)
+            {
+                double t = (double)i / steps;
+
+                int x = (int)Math.Round(start.X + (end.X - start.X) * t);
+                int y = (int)Math.Round(start.Y + (end.Y - start.Y) * t);
+
+                if (y >= 0 && y < GridHeight && x >= 0 && x < GridWidth)
+                {
+                    grid[y, x] = '*';
+                }
+            }
+        }
+
+        static void PrintGrid(char[,] grid)
+        {
+            for (int r = 0; r < GridHeight; r++)
+            {
+                for (int c = 0; c < GridWidth; c++)
+                    Console.Write(grid[r, c]);
+
+                Console.WriteLine();
+            }
+        }
+    }
+}
